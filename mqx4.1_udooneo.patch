@@ -1,0 +1,524 @@
+diff -ru udooneo_MQX_4_1_orig/config/imx6sx_sdb_m4/user_config.h udooneo_MQX_4_1/config/imx6sx_sdb_m4/user_config.h
+--- udooneo_MQX_4_1_orig/config/imx6sx_sdb_m4/user_config.h	2015-11-19 18:03:49.617943552 +0100
++++ udooneo_MQX_4_1/config/imx6sx_sdb_m4/user_config.h	2015-11-19 18:02:15.777939548 +0100
+@@ -34,6 +34,7 @@
+ #define BSPCFG_ENABLE_TTYA       0
+ #define BSPCFG_ENABLE_ITTYA      0
+ #define BSPCFG_ENABLE_TTYB       0
++// mqx console port
+ #define BSPCFG_ENABLE_ITTYB      1
+ #define BSPCFG_ENABLE_TTYC       0
+ #define BSPCFG_ENABLE_ITTYC      0
+@@ -48,14 +49,14 @@
+ #define BSPCFG_ENABLE_I2C2       0
+ #define BSPCFG_ENABLE_II2C2      0
+ #define BSPCFG_ENABLE_I2C3       0
+-#define BSPCFG_ENABLE_II2C3      1
++#define BSPCFG_ENABLE_II2C3      0
+ #define BSPCFG_ENABLE_I2C4       0
+ #define BSPCFG_ENABLE_II2C4      0
+ #define BSPCFG_ENABLE_SPI1       0
+ #define BSPCFG_ENABLE_SPI2       0
+ #define BSPCFG_ENABLE_SPI3       0
+-#define BSPCFG_ENABLE_SPI4       1
+-#define BSPCFG_ENABLE_SPI5       0
++#define BSPCFG_ENABLE_SPI4       0
++#define BSPCFG_ENABLE_SPI5       1
+ #define BSPCFG_ENABLE_RTCDEV     0
+ #define BSPCFG_ENABLE_ADC1       0
+ #define BSPCFG_ENABLE_ADC2       0
+@@ -88,8 +89,9 @@
+  * any clock nodes. The mechanism is to set every node's inital "is_always_open"
+  * as 1. This macro is used to turn on this walkaround
+  */
+-#define BSPCFG_CM_LINUX_PEER_WALKAROUND     0
+-
++// modified for UdooNeo Board
++// if = 0 i2c not work fine !!!
++#define BSPCFG_CM_LINUX_PEER_WALKAROUND		1
+ 
+ #define MQX_ENABLE_MCORE_LPM                1
+ 
+diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h	2015-11-19 18:03:49.617943552 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h	2015-11-19 18:02:15.937939554 +0100
+@@ -76,6 +76,7 @@
+ */
+ #ifndef BSP_ALARM_FREQUENCY
+     #define BSP_ALARM_FREQUENCY         (200)
++//    #define BSP_ALARM_FREQUENCY         (1000) for 1msec tick
+ #endif
+ 
+ /*
+@@ -160,20 +161,20 @@
+ /*-----------------------------------------------------------------------------
+ **                      GPIO
+ */
+-
++// modified for UdooNeo Board
+ /* SDB BOARD SW4 */
+ /* GPIO PORT1_18 */
+-#define BSP_BUTTON1_PROMPT                  "SW4"
+-#define BSP_BUTTON1                         (LWGPIO_PIN_CSI_DATA04)
+-#define BSP_BUTTON1_MUX_GPIO                (LWGPIO_MUX_CSI_DATA04_GPIO)
+-#define BSP_BUTTON1_MUX_IRQ                 (LWGPIO_MUX_CSI_DATA04_GPIO)
++//#define BSP_BUTTON1_PROMPT                  "SW4"
++//#define BSP_BUTTON1                         (LWGPIO_PIN_CSI_DATA04)
++//#define BSP_BUTTON1_MUX_GPIO                (LWGPIO_MUX_CSI_DATA04_GPIO)
++//#define BSP_BUTTON1_MUX_IRQ                 (LWGPIO_MUX_CSI_DATA04_GPIO)
+ 
+ /* SDB BOARD SW5 */
+ /* GPIO PORT1_19 */
+-#define BSP_BUTTON2_PROMPT                  "SW5"
+-#define BSP_BUTTON2                         (LWGPIO_PIN_CSI_DATA05)
+-#define BSP_BUTTON2_MUX_GPIO                (LWGPIO_MUX_CSI_DATA05_GPIO)
+-#define BSP_BUTTON2_MUX_IRQ                 (LWGPIO_MUX_CSI_DATA05_GPIO)
++//#define BSP_BUTTON2_PROMPT                  "SW5"
++//#define BSP_BUTTON2                         (LWGPIO_PIN_CSI_DATA05)
++//#define BSP_BUTTON2_MUX_GPIO                (LWGPIO_MUX_CSI_DATA05_GPIO)
++//#define BSP_BUTTON2_MUX_IRQ                 (LWGPIO_MUX_CSI_DATA05_GPIO)
+ 
+ /*
+ ** HWTIMER specifications
+@@ -193,7 +194,7 @@
+ **                      ECSPI
+ */
+ #define BSP_ECSPI_INT_LEVEL                  (4)
+-#define BSP_SPI_MEMORY_CHANNEL               (4)
++#define BSP_SPI_MEMORY_CHANNEL               (5)
+ 
+ /*-----------------------------------------------------------------------------
+ **                      I2C
+diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2015-11-19 18:03:49.617943552 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2015-11-19 18:02:15.937939554 +0100
+@@ -199,7 +199,9 @@
+ #endif
+ 
+ #if BSPCFG_ENABLE_SPI5
+-    _io_spi_install("spi5:", &_bsp_spi5_init);
++// modified for UdooNeo Board
++// is called in mqx_spi.c (arduino source)
++//_io_spi_install("spi5:", &_bsp_spi5_init);
+ #endif
+ 
+ /* Flashx and QuadSPI only one is allowed to be enabled
+@@ -257,6 +259,7 @@
+    _io_mcore_lpm_init();
+ #endif
+ 
++
+     return 0;
+ }
+ 
+diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c	2015-11-19 18:03:49.617943552 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c	2015-11-19 18:02:15.937939554 +0100
+@@ -200,6 +200,72 @@
+ 
+             status = MQX_OK;
+             break;
++
++		//added for UdooNeo Board
++        case 3:
++            /* Enable pin mux */
++            if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++            {
++                IOMUXC_SW_MUX_CTL_PAD_NAND_DATA06 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA06_MUX_MODE(3);
++                IOMUXC_SW_MUX_CTL_PAD_NAND_DATA07 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA07_MUX_MODE(3);
++                IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06 = IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06_PKE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06_PUE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06_PUS(2)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06_SPEED(2) | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06_DSE(6)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06_SRE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA06_HYS_MASK;
++                IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07 = IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07_PKE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07_PUE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07_PUS(2)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07_SPEED(2) | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07_DSE(6)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07_SRE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA07_HYS_MASK;
++                IOMUXC_UART3_IPP_UART_RXD_MUX_SELECT_INPUT = 0;
++            }
++            /* Disable pin mux to the default gpio */
++            if (flags & IO_PERIPHERAL_PIN_MUX_DISABLE)
++            {
++                IOMUXC_SW_MUX_CTL_PAD_NAND_DATA06 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA06_MUX_MODE(5);
++                IOMUXC_SW_MUX_CTL_PAD_NAND_DATA07 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA07_MUX_MODE(5);
++            }
++
++            status = MQX_OK;
++            break;
++
++		//added for UdooNeo Board
++        case 5:
++            /* Enable pin mux */
++            if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++            {
++                IOMUXC_SW_MUX_CTL_PAD_SD4_DATA4 = IOMUXC_SW_MUX_CTL_PAD_SD4_DATA4_MUX_MODE(2);
++                IOMUXC_SW_MUX_CTL_PAD_SD4_DATA5 = IOMUXC_SW_MUX_CTL_PAD_SD4_DATA5_MUX_MODE(2);
++                IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4 = IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4_PKE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4_PUE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4_PUS(2)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4_SPEED(2) | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4_DSE(6)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4_SRE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA4_HYS_MASK;
++                IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5 = IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5_PKE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5_PUE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5_PUS(2)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5_SPEED(2) | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5_DSE(6)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5_SRE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_SD4_DATA5_HYS_MASK;
++                IOMUXC_UART5_IPP_UART_RXD_MUX_SELECT_INPUT = 0;
++            }
++            /* Disable pin mux to the default gpio */
++            if (flags & IO_PERIPHERAL_PIN_MUX_DISABLE)
++            {
++                IOMUXC_SW_MUX_CTL_PAD_SD4_DATA4 = IOMUXC_SW_MUX_CTL_PAD_SD4_DATA4_MUX_MODE(5);
++                IOMUXC_SW_MUX_CTL_PAD_SD4_DATA5 = IOMUXC_SW_MUX_CTL_PAD_SD4_DATA5_MUX_MODE(5);
++            }
++
++            status = MQX_OK;
++            break;
+     }
+ 
+     return status;
+@@ -470,40 +536,46 @@
+             break;
+ 
+         case 5:
++			// modified for UdooNeo Board
+             if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
+             {
+                 /* daisy chain selection */
+-                IOMUXC_ECSPI5_IPP_CSPI_CLK_IN_SELECT_INPUT = 1;
+-                IOMUXC_ECSPI5_IPP_IND_MISO_SELECT_INPUT = 1;
+-                IOMUXC_ECSPI5_IPP_IND_MOSI_SELECT_INPUT = 1;
+-                IOMUXC_ECSPI5_IPP_IND_SS_B_SELECT_INPUT_0 = 1;
++                IOMUXC_ECSPI5_IPP_CSPI_CLK_IN_SELECT_INPUT = 0;
++                IOMUXC_ECSPI5_IPP_IND_MISO_SELECT_INPUT = 0;
++                IOMUXC_ECSPI5_IPP_IND_MOSI_SELECT_INPUT = 0;
++                //setting manual cs !!!, if setting from driver spi not work
++				//IOMUXC_ECSPI5_IPP_IND_SS_B_SELECT_INPUT_0 = 0;
+ 
+                 /* iomux */
+-                IOMUXC_SW_MUX_CTL_PAD_QSPI1A_SS1_B = IOMUXC_SW_MUX_CTL_PAD_QSPI1A_SS1_B_MUX_MODE(3);
+-                IOMUXC_SW_MUX_CTL_PAD_QSPI1A_DQS = IOMUXC_SW_MUX_CTL_PAD_QSPI1A_DQS_MUX_MODE(3);
+-                IOMUXC_SW_MUX_CTL_PAD_QSPI1B_SS1_B = IOMUXC_SW_MUX_CTL_PAD_QSPI1B_SS1_B_MUX_MODE(3);
+-                IOMUXC_SW_MUX_CTL_PAD_QSPI1B_DQS = IOMUXC_SW_MUX_CTL_PAD_QSPI1B_DQS_MUX_MODE(3);
++                IOMUXC_SW_MUX_CTL_PAD_NAND_DATA00 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA00_MUX_MODE(3);
++                IOMUXC_SW_MUX_CTL_PAD_NAND_DATA01 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA01_MUX_MODE(3);
++                IOMUXC_SW_MUX_CTL_PAD_NAND_DATA02 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA02_MUX_MODE(3);
++                //setting manual cs !!!, if setting from driver spi not work
++                //IOMUXC_SW_MUX_CTL_PAD_NAND_DATA03 = IOMUXC_SW_MUX_CTL_PAD_NAND_DATA03_MUX_MODE(3);
+ 
+                 /* pad control */
+-                IOMUXC_SW_PAD_CTL_PAD_QSPI1A_SS1_B = IOMUXC_SW_PAD_CTL_PAD_QSPI1A_SS1_B_SPEED(2) | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1A_SS1_B_DSE(6)   | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1A_SS1_B_SRE_MASK | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1A_SS1_B_HYS_MASK;
+-                IOMUXC_SW_PAD_CTL_PAD_QSPI1A_DQS = IOMUXC_SW_PAD_CTL_PAD_QSPI1A_DQS_SPEED(2) | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_QSPI1A_DQS_DSE(6)   | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_QSPI1A_DQS_SRE_MASK | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_QSPI1A_DQS_HYS_MASK;
+-                IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B = IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B_PKE_MASK | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B_PUE_MASK | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B_PUS(0)   | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B_SPEED(2) | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B_DSE(6)   | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B_SRE_MASK | \
+-                                                     IOMUXC_SW_PAD_CTL_PAD_QSPI1B_SS1_B_HYS_MASK;
+-                IOMUXC_SW_PAD_CTL_PAD_QSPI1B_DQS = IOMUXC_SW_PAD_CTL_PAD_QSPI1B_DQS_SPEED(2) | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_QSPI1B_DQS_DSE(6)   | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_QSPI1B_DQS_SRE_MASK | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_QSPI1B_DQS_HYS_MASK;
++                IOMUXC_SW_PAD_CTL_PAD_NAND_DATA00 = IOMUXC_SW_PAD_CTL_PAD_NAND_DATA00_SPEED(2) | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA00_DSE(6)   | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA00_SRE_MASK | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA00_HYS_MASK;
++                IOMUXC_SW_PAD_CTL_PAD_NAND_DATA01 = IOMUXC_SW_PAD_CTL_PAD_NAND_DATA01_SPEED(2) | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA01_DSE(6)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA01_SRE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA01_HYS_MASK;
++                IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02 = IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02_PKE_MASK | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02_PUE_MASK | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02_PUS(0)   | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02_SPEED(2) | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02_DSE(6)   | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02_SRE_MASK | \
++                                                     IOMUXC_SW_PAD_CTL_PAD_NAND_DATA02_HYS_MASK;
++                /*
++					setting manual cs !!!, if setting from driver spi not work
++                IOMUXC_SW_PAD_CTL_PAD_NAND_DATA03 = IOMUXC_SW_PAD_CTL_PAD_NAND_DATA03_SPEED(2) | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA03_DSE(6)   | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA03_SRE_MASK | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_NAND_DATA03_HYS_MASK;
++				*/
+             }
+ 
+             status = MQX_OK;
+@@ -699,29 +771,38 @@
+             }
+             break;
+         case 4:
++			// modified for UdooNeo Board
+             if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
+             {
+                 /* SCL & SDA */
+-                IOMUXC_SW_MUX_CTL_PAD_CSI_DATA06 = IOMUXC_SW_MUX_CTL_PAD_CSI_DATA06_MUX_MODE(2) | IOMUXC_SW_MUX_CTL_PAD_CSI_DATA06_SION_MASK;
+-                IOMUXC_I2C4_IPP_SCL_IN_SELECT_INPUT = 2;
+-                IOMUXC_SW_MUX_CTL_PAD_CSI_DATA07 = IOMUXC_SW_MUX_CTL_PAD_CSI_DATA07_MUX_MODE(2) | IOMUXC_SW_MUX_CTL_PAD_CSI_DATA07_SION_MASK;
+-                IOMUXC_I2C4_IPP_SDA_IN_SELECT_INPUT = 2;
+-                IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06 = IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_PKE_MASK  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_PUE_MASK  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_PUS(2)    | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_SPEED(2)  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_DSE(6)    | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_ODE_SHIFT | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_SRE_MASK  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA06_HYS_MASK;
+-                IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07 = IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_PKE_MASK  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_PUE_MASK  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_PUS(2)    | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_SPEED(2)  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_DSE(6)    | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_ODE_SHIFT | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_SRE_MASK  | \
+-                                                   IOMUXC_SW_PAD_CTL_PAD_CSI_DATA07_HYS_MASK;
++                IOMUXC_SW_MUX_CTL_PAD_USB_H_STROBE = IOMUXC_SW_MUX_CTL_PAD_USB_H_STROBE_MUX_MODE(3) |	IOMUXC_SW_MUX_CTL_PAD_USB_H_STROBE_SION_MASK;
++                IOMUXC_I2C4_IPP_SCL_IN_SELECT_INPUT = 1;
++                IOMUXC_SW_MUX_CTL_PAD_USB_H_DATA = IOMUXC_SW_MUX_CTL_PAD_USB_H_DATA_MUX_MODE(3) | IOMUXC_SW_MUX_CTL_PAD_USB_H_DATA_SION_MASK;
++                IOMUXC_I2C4_IPP_SDA_IN_SELECT_INPUT = 1;
++                IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE = IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_PKE_MASK  | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_PUE_MASK  | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_PUS(2)    | \
++/*
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_SPEED(2)  | \
++*/
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_DSE(6)    | \
++/*                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_ODE_SHIFT | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_SRE_MASK  | \
++*/
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_STROBE_HYS_MASK;
++
++                IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA = IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_PKE_MASK  | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_PUE_MASK  | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_PUS(2)    | \
++/*
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_SPEED(2)  | \
++*/
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_DSE(6)    | \
++/*
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_ODE_SHIFT | \
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_SRE_MASK  | \
++*/
++                                                   IOMUXC_SW_PAD_CTL_PAD_USB_H_DATA_HYS_MASK;
+             }
+             break;
+         default:
+@@ -731,4 +812,168 @@
+     return MQX_OK;
+ }
+ 
++// Added for UdooNeo Board
++/*FUNCTION*-------------------------------------------------------------------
++*
++* Function Name    : _bsp_pwm_io_init
++* Returned Value   : MQX_OK or -1
++* Comments         :
++*    This function performs BSP-specific initialization related to PWM
++*
++*END*----------------------------------------------------------------------*/
++
++_mqx_int _bsp_pwm_io_init
++(
++	/* [IN] Serial device number */
++	_mqx_uint dev_num,
++
++	/* [IN] Required functionality */
++	_mqx_uint flags
++)
++{
++
++	int32_t status = IO_ERROR;
++
++	switch (dev_num)
++	{
++	case 0:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD3 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD3_MUX_MODE(2);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD3 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD3_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD3_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD3_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD3_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD3_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD3_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD3 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD3_MUX_MODE(5);
++		}
++		break;
++
++	case 1:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD2 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD2_MUX_MODE(2);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD2 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD2_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD2_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD2_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD2_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD2_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD2_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD2 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD2_MUX_MODE(5);
++		}
++		break;
++
++	case 2:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD1 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD1_MUX_MODE(2);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD1 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD1_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD1_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD1_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD1_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD1_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD1_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD1 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD1_MUX_MODE(5);
++		}
++		break;
++
++	case 3:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD0 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD0_MUX_MODE(2);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD0 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD0_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD0_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD0_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD0_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD0_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_RD0_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD0 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_RD0_MUX_MODE(5);
++		}
++		break;
++
++	case 4:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD3 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD3_MUX_MODE(3);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD3 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD3_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD3_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD3_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD3_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD3_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD3_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD3 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD3_MUX_MODE(5);
++		}
++		break;
++
++	case 5:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD2 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD2_MUX_MODE(3);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD2 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD2_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD2_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD2_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD2_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD2_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD2_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD2 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD2_MUX_MODE(5);
++		}
++		break;
++
++	case 6:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD1 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD1_MUX_MODE(3);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD1 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD1_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD1_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD1_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD1_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD1_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD1_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD1 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD1_MUX_MODE(5);
++		}
++		break;
++
++	case 7:
++    	/* Enable pin mux */
++    	if (flags & IO_PERIPHERAL_PIN_MUX_ENABLE)
++    	{
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD0 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD0_MUX_MODE(3);
++			IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD0 = IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD0_PKE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD0_PUE_MASK  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD0_PUS(2)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD0_SPEED(2)  | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD0_DSE(6)    | \
++            	                               IOMUXC_SW_PAD_CTL_PAD_RGMII2_TD0_HYS_MASK;
++		}
++		else {
++			IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD0 = IOMUXC_SW_MUX_CTL_PAD_RGMII2_TD0_MUX_MODE(5);
++		}
++		break;
++	}
++	return MQX_OK;
++}
++
++
+ /* EOF */
+diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c	2015-11-19 18:03:49.617943552 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c	2015-11-19 18:02:15.937939554 +0100
+@@ -35,6 +35,7 @@
+ } rdc_memory_region;
+ 
+ /* RDC configuration */
++/*
+ static uint8_t rdc_peripheral_m4[] = {
+     RDC_PDAP_UART2_ID,
+     RDC_PDAP_I2C3_ID,
+@@ -42,6 +43,20 @@
+     RDC_PDAP_ECSPI5_ID,
+     RDC_PDAP_ADC1_ID,
+     RDC_PDAP_ADC2_ID,
++    RDC_PDAP_CAN1_ID,
++    RDC_PDAP_CAN2_ID,
++    RDC_PDAP_EPIT1_ID,
++    RDC_PDAP_EPIT2_ID,
++    RDC_PDAP_WDOG3_ID
++};
++*/
++
++// // modified for UdooNeo Board
++static uint8_t rdc_peripheral_m4[] = {
++    RDC_PDAP_UART2_ID,
++    RDC_PDAP_ECSPI5_ID,
++    RDC_PDAP_ADC1_ID,
++    RDC_PDAP_ADC2_ID,
+     RDC_PDAP_CAN1_ID,
+     RDC_PDAP_CAN2_ID,
+     RDC_PDAP_EPIT1_ID,
+
