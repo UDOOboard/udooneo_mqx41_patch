@@ -1,6 +1,6 @@
-diff -ru udooneo_MQX_4_1_orig/config/imx6sx_sdb_m4/user_config.h udooneo_MQX_4_1/config/imx6sx_sdb_m4/user_config.h
---- udooneo_MQX_4_1_orig/config/imx6sx_sdb_m4/user_config.h	2015-11-19 18:03:49.617943552 +0100
-+++ udooneo_MQX_4_1/config/imx6sx_sdb_m4/user_config.h	2015-11-19 18:02:15.777939548 +0100
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/config/imx6sx_sdb_m4/user_config.h udooneo_MQX_4_1/config/imx6sx_sdb_m4/user_config.h
+--- udooneo_MQX_4_1_orig/config/imx6sx_sdb_m4/user_config.h	2014-12-25 07:55:26.000000000 +0100
++++ udooneo_MQX_4_1/config/imx6sx_sdb_m4/user_config.h	2015-09-20 21:53:31.000000000 +0200
 @@ -34,6 +34,7 @@
  #define BSPCFG_ENABLE_TTYA       0
  #define BSPCFG_ENABLE_ITTYA      0
@@ -39,9 +39,230 @@ diff -ru udooneo_MQX_4_1_orig/config/imx6sx_sdb_m4/user_config.h udooneo_MQX_4_1
  
  #define MQX_ENABLE_MCORE_LPM                1
  
-diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h
---- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h	2015-11-19 18:03:49.617943552 +0100
-+++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h	2015-11-19 18:02:15.937939554 +0100
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/build/bat/bsp_imx6sx_sdb_m4.sh udooneo_MQX_4_1/mqx/build/bat/bsp_imx6sx_sdb_m4.sh
+--- udooneo_MQX_4_1_orig/mqx/build/bat/bsp_imx6sx_sdb_m4.sh	2014-12-25 07:55:26.000000000 +0100
++++ udooneo_MQX_4_1/mqx/build/bat/bsp_imx6sx_sdb_m4.sh	2016-02-18 11:28:11.000000000 +0100
+@@ -29,7 +29,9 @@
+ cp -f "${ROOTDIR}/mqx/source/io/core_mutex/core_mutex.h" "${OUTPUTDIR}/core_mutex.h"
+ cp -f "${ROOTDIR}/mqx/source/io/sensor/mma8451q/mma8451q_generic.h" "${OUTPUTDIR}/mma8451q_generic.h"
+ cp -f "${ROOTDIR}/mqx/source/io/lpm_mcore/lpm_mcore.h" "${OUTPUTDIR}/lpm_mcore.h"
+-cp -f "${ROOTDIR}/mqx/source/io/spi/spi.h" "${OUTPUTDIR}/spi.h"
++#renamed for UdooNeo Board, conflict with arduino spi header
++#cp -f "${ROOTDIR}/mqx/source/io/spi/spi.h" "${OUTPUTDIR}/spi.h"
++cp -f "${ROOTDIR}/mqx/source/io/spi/spi_bsp_mqx.h" "${OUTPUTDIR}/spi_bsp_mqx.h"
+ cp -f "${ROOTDIR}/mqx/source/io/serial/serial.h" "${OUTPUTDIR}/serial.h"
+ cp -f "${ROOTDIR}/mqx/source/io/cm/cm.h" "${OUTPUTDIR}/cm.h"
+ cp -f "${ROOTDIR}/mqx/source/io/core_mutex/sema4.h" "${OUTPUTDIR}/sema4.h"
+@@ -90,6 +92,7 @@
+ mkdir -p "${OUTPUTDIR}/"
+ cp -f "${ROOTDIR}/mqx/source/bsp/imx6sx_sdb_m4/gcc_arm/ram.ld" "${OUTPUTDIR}/ram.ld"
+ cp -f "${ROOTDIR}/mqx/source/bsp/imx6sx_sdb_m4/gcc_arm/extflash.ld" "${OUTPUTDIR}/extflash.ld"
++cp -f "${ROOTDIR}/mqx/source/bsp/imx6sx_sdb_m4/gcc_arm/ddr.ld" "${OUTPUTDIR}/ddr.ld"
+ mkdir -p "${OUTPUTDIR}/Generated_Code"
+ mkdir -p "${OUTPUTDIR}/Sources"
+ :
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/build_gcc_arm.sh udooneo_MQX_4_1/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/build_gcc_arm.sh
+--- udooneo_MQX_4_1_orig/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/build_gcc_arm.sh	2014-12-25 07:55:39.000000000 +0100
++++ udooneo_MQX_4_1/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/build_gcc_arm.sh	2016-07-19 15:35:38.199155106 +0200
+@@ -3,7 +3,7 @@
+ status=0
+ 
+ 
+-make TOOL=gcc_arm CONFIG=debug LOAD=extflash build -j3 
++make TOOL=gcc_arm CONFIG=debug LOAD=ddr build -j3 
+ if [ "$?" != "0" ]; then
+     status=-1
+ fi
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/clean_gcc_arm.sh udooneo_MQX_4_1/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/clean_gcc_arm.sh
+--- udooneo_MQX_4_1_orig/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/clean_gcc_arm.sh	2014-12-25 07:55:39.000000000 +0100
++++ udooneo_MQX_4_1/mqx/examples/gpio/build/make/gpio_imx6sx_sdb_m4/clean_gcc_arm.sh	2016-06-10 09:38:16.000000000 +0200
+@@ -3,12 +3,12 @@
+ status=0
+ 
+ 
+-make TOOL=gcc_arm CONFIG=debug LOAD=extflash clean 
++make TOOL=gcc_arm CONFIG=debug LOAD=ddr clean 
+ if [ "$?" != "0" ]; then
+     status=-1
+ fi
+ 
+-make TOOL=gcc_arm CONFIG=release LOAD=extflash clean 
++make TOOL=gcc_arm CONFIG=release LOAD=ddr clean 
+ if [ "$?" != "0" ]; then
+     status=-1
+ fi
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/bsp.h udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/bsp.h
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/bsp.h	2014-12-25 07:55:26.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/bsp.h	2016-07-19 16:07:15.814835223 +0200
+@@ -62,7 +62,7 @@
+ #include <lpm_imx6sx.h>
+ #include <lpm.h>
+ 
+-#include <spi.h>
++#include <spi_bsp_mqx.h>
+ #include <spi_ecspi.h>
+ #include <spi_slave_ecspi.h>
+ 
+@@ -85,6 +85,7 @@
+ _mqx_int _bsp_mcan_io_init(_mqx_uint dev_num);
+ _mqx_int _bsp_ecspi_io_init( _mqx_uint dev_num, _mqx_uint flags);
+ _mqx_int _bsp_ecspi_slave_io_init( _mqx_uint dev_num);
++_mqx_int _bsp_pwm_io_init( _mqx_uint dev_num, _mqx_uint flags);
+ 
+ extern const LPM_CPU_OPERATION_MODE LPM_CPU_OPERATION_MODES[];
+ 
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/gcc_arm/ddr.ld udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/gcc_arm/ddr.ld
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/gcc_arm/ddr.ld	1970-01-01 01:00:00.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/gcc_arm/ddr.ld	2016-07-19 15:59:45.037755257 +0200
+@@ -0,0 +1,145 @@
++ENTRY(__boot)
++EXTERN(main __vector_table ram_vector)
++
++MEMORY
++{
++	text        (RX): ORIGIN = 0x84000000, LENGTH = 0x00080000		/* DDR */
++  data        (RW): ORIGIN = 0x00901000, LENGTH = 0x0001E000    /* OCRAM */
++}
++
++CODE_BASE_ADDR_START            = ORIGIN(text);
++CODE_SIZE                       = LENGTH(text);
++CODE_BASE_ADDR_END              = CODE_BASE_ADDR_START + CODE_SIZE;
++
++DATA_BASE_ADDR_START            = ORIGIN(data);
++DATA_SIZE                       = LENGTH(data);
++DATA_BASE_ADDR_END              = DATA_BASE_ADDR_START + DATA_SIZE;
++
++/* exported symbols */
++__DEFAULT_INTERRUPT_STACK_SIZE  = 1024;
++
++__ROM_END                       = CODE_BASE_ADDR_END;
++
++/* 64kB of shared memory at DDR */
++__SHARED_RAM_START              = 0xBFF00000;
++__SHARED_RAM_END                = 0xBFF10000;
++
++/* define 4KB clock management share memory in RAM*/
++__SHARED_CM_IRAM_START          = 0x2091F000;
++__SHARED_CM_IRAM_END            = 0x20920000;
++
++/* 32kB TCML for system pool extension */
++__SRAM_POOL_START               = 0x1FFF8010;    /* reserve first 4 word for reset (boot vector) */
++__SRAM_POOL_END                 = 0x20000000;
++
++/*__BOOT_STACK_ADDRESS            = 0x20008000;*/
++__BOOT_STACK_ADDRESS            = 0x0091FFFF;
++__KERNEL_DATA_END               = DATA_BASE_ADDR_END;
++
++SECTIONS
++{
++    /* place vectors at the start, each section has only one symbol */
++    .vectors :
++    {
++        *(.vectors_rom)
++    } > text
++    
++    /* place text */
++    .text :
++    {
++        *(KERNEL)
++        *(.text*)
++        *(.rodata*)
++        
++        /* glue arm/thumb and thumb/arm code */
++        *(.glue_7)
++        *(.glue_7t)
++        
++        /* unwind exception frame */
++        KEEP(*(.eh_frame))
++        KEEP(*(.eh_frame_hdr))
++        
++        . = ALIGN(0x8);
++        KEEP (*crtbegin.o(.ctors))
++        KEEP (*(EXCLUDE_FILE (*crtend.o) .ctors))
++        KEEP (*(SORT(.ctors.*)))
++        KEEP (*crtend.o(.ctors))
++        
++        KEEP (*crtbegin.o(.dtors))
++        KEEP (*(EXCLUDE_FILE (*crtend.o) .dtors))
++        KEEP (*(SORT(.dtors.*)))
++        KEEP (*crtend.o(.dtors))
++        
++        /* preinit_array */
++        __preinit_array_start = .;
++        KEEP (*(.preinit_array*))
++        __preinit_array_end = .;
++        
++        /* init_array */
++        __init_array_start = .;
++        KEEP (*(SORT(.init_array.*)))
++        KEEP (*(.init_array*))
++        __init_array_end = .;
++        
++        /* fini_array */
++        __fini_array_start = .;
++        KEEP (*(SORT(.fini_array.*)))
++        KEEP (*(.fini_array*))
++        __fini_array_end = .;
++        
++        /* gnu arm zero table */
++        . = ALIGN(4);
++        __zero_table_start__ = .;
++        LONG (_bss_start)
++        LONG (_bss_end - _bss_start)
++        __zero_table_end__ = .;
++        
++        /* gnu arm copy table */
++        /* NOTE: bootloader requires rom to ram data copy */
++        . = ALIGN(4);
++        __copy_table_start__ = .;
++        LONG (LOADADDR(.data))
++        LONG (_data_start)
++        LONG (_data_end - _data_start)
++        __copy_table_end__ = .;
++        
++    } > text
++    
++    /* unwind exception frame */
++    .ARM.extab :
++    {
++        *(.ARM.extab* .gnu.linkonce.armextab.*)
++    } > text
++    .ARM :
++    {
++        __exidx_start = .;
++        *(.ARM.exidx*)
++        __exidx_end = .;
++    } > text
++    
++    /* place data, region address must be 8B aligned */
++    .data :
++    {
++        _data_start = .;
++        *(.vectors_ram)
++        *(.data*)
++        . = ALIGN(8);
++        _data_end = .;
++    } > data AT> text
++    
++    /* place bss, section size must be 8 aligned because of startup */
++    .bss BLOCK(8) :
++    {
++      _bss_start = .;
++      *(.bss*)
++      *(COMMON)
++      . = ALIGN(8);
++      _bss_end = .;
++    } > data
++    
++    .kernel_data BLOCK(0x10) : 
++    {
++        __KERNEL_DATA_START = ALIGN(0x10);
++    } > data
++}
++
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h	2014-12-25 07:55:26.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h	2015-09-20 21:52:33.000000000 +0200
 @@ -76,6 +76,7 @@
  */
  #ifndef BSP_ALARM_FREQUENCY
@@ -89,9 +310,9 @@ diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6sx_sdb_m4.h udoon
  
  /*-----------------------------------------------------------------------------
  **                      I2C
-diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c
---- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2015-11-19 18:03:49.617943552 +0100
-+++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2015-11-19 18:02:15.937939554 +0100
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2014-12-25 07:55:26.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2015-09-20 21:51:19.000000000 +0200
 @@ -199,7 +199,9 @@
  #endif
  
@@ -111,9 +332,9 @@ diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c udooneo_MQ
      return 0;
  }
  
-diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c
---- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c	2015-11-19 18:03:49.617943552 +0100
-+++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c	2015-11-19 18:02:15.937939554 +0100
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c	2014-12-25 07:55:26.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c	2016-07-19 16:07:15.814835223 +0200
 @@ -200,6 +200,72 @@
  
              status = MQX_OK;
@@ -489,9 +710,9 @@ diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_gpio.c udooneo_M
 +
 +
  /* EOF */
-diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c
---- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c	2015-11-19 18:03:49.617943552 +0100
-+++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c	2015-11-19 18:02:15.937939554 +0100
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c
+--- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c	2014-12-25 07:55:26.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c	2016-07-19 16:07:15.814835223 +0200
 @@ -35,6 +35,7 @@
  } rdc_memory_region;
  
@@ -500,16 +721,10 @@ diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c udooneo_MQX
  static uint8_t rdc_peripheral_m4[] = {
      RDC_PDAP_UART2_ID,
      RDC_PDAP_I2C3_ID,
-@@ -42,6 +43,20 @@
-     RDC_PDAP_ECSPI5_ID,
-     RDC_PDAP_ADC1_ID,
-     RDC_PDAP_ADC2_ID,
-+    RDC_PDAP_CAN1_ID,
-+    RDC_PDAP_CAN2_ID,
-+    RDC_PDAP_EPIT1_ID,
-+    RDC_PDAP_EPIT2_ID,
-+    RDC_PDAP_WDOG3_ID
-+};
+@@ -48,6 +49,18 @@
+     RDC_PDAP_EPIT2_ID,
+     RDC_PDAP_WDOG3_ID
+ };
 +*/
 +
 +// // modified for UdooNeo Board
@@ -518,7 +733,446 @@ diff -ru udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_hw.c udooneo_MQX
 +    RDC_PDAP_ECSPI5_ID,
 +    RDC_PDAP_ADC1_ID,
 +    RDC_PDAP_ADC2_ID,
-     RDC_PDAP_CAN1_ID,
-     RDC_PDAP_CAN2_ID,
-     RDC_PDAP_EPIT1_ID,
-
++    RDC_PDAP_EPIT1_ID,
++    RDC_PDAP_EPIT2_ID,
++    RDC_PDAP_WDOG3_ID
++};
+ 
+ static uint8_t mmdc_idx, qspi1_idx, qspi2_idx, ocram_idx;
+ 
+@@ -260,8 +273,11 @@
+     mmdc_idx = qspi1_idx = qspi2_idx = ocram_idx = 0;
+     for (i = 0; i < ELEMENTS_OF(rdc_memory_m4); i++)
+     {
+-        /* assign proprietary memory to RDC domain 1 only */
+-        rdc_init_memory(rdc_memory_m4[i].start, rdc_memory_m4[i].end, 0x4000000C);
++        /* assign proprietary memory to RDC domain for both M4 and A9 access */
++
++        // modified for UDOO Neo Board, for loading binary from same address
++        // without using clean.fw mapped on other address
++        rdc_init_memory(rdc_memory_m4[i].start, rdc_memory_m4[i].end, 0x4000000F);
+     }
+ }
+ 
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_bsp_mqx.h udooneo_MQX_4_1/mqx/source/io/spi/spi_bsp_mqx.h
+--- udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_bsp_mqx.h	1970-01-01 01:00:00.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/io/spi/spi_bsp_mqx.h	2014-12-25 07:54:58.000000000 +0100
+@@ -0,0 +1,307 @@
++/*HEADER**********************************************************************
++*
++* Copyright 2012 Freescale Semiconductor, Inc.
++*
++* This software is owned or controlled by Freescale Semiconductor.
++* Use of this software is governed by the Freescale MQX RTOS License
++* distributed with this Material.
++* See the MQX_RTOS_LICENSE file distributed for more details.
++*
++* Brief License Summary:
++* This software is provided in source form for you to use free of charge,
++* but it is not open source software. You are allowed to use this software
++* but you cannot redistribute it or derivative works of it in source form.
++* The software may be used only in connection with a product containing
++* a Freescale microprocessor, microcontroller, or digital signal processor.
++* See license agreement file for full license terms including other
++* restrictions.
++*****************************************************************************
++*
++* Comments:
++*
++*   This file contains the definitions of constants and structures
++*   required for the SPI driver
++*
++*
++*END************************************************************************/
++
++
++#ifndef __spi_h__
++#define __spi_h__
++
++
++/*--------------------------------------------------------------------------*/
++/*
++**                            CONSTANT DEFINITIONS
++*/
++
++/*
++** IOCTL calls specific to SPI
++*/
++#define IO_IOCTL_SPI_GET_BAUD              _IO(IO_TYPE_SPI,0x01)
++#define IO_IOCTL_SPI_SET_BAUD              _IO(IO_TYPE_SPI,0x02)
++#define IO_IOCTL_SPI_GET_MODE              _IO(IO_TYPE_SPI,0x03)
++#define IO_IOCTL_SPI_SET_MODE              _IO(IO_TYPE_SPI,0x04)
++#define IO_IOCTL_SPI_GET_DUMMY_PATTERN     _IO(IO_TYPE_SPI,0x05)
++#define IO_IOCTL_SPI_SET_DUMMY_PATTERN     _IO(IO_TYPE_SPI,0x06)
++#define IO_IOCTL_SPI_GET_TRANSFER_MODE     _IO(IO_TYPE_SPI,0x07)
++#define IO_IOCTL_SPI_SET_TRANSFER_MODE     _IO(IO_TYPE_SPI,0x08)
++#define IO_IOCTL_SPI_GET_ENDIAN            _IO(IO_TYPE_SPI,0x09)
++#define IO_IOCTL_SPI_SET_ENDIAN            _IO(IO_TYPE_SPI,0x0A)
++#define IO_IOCTL_SPI_DEVICE_ENABLE         _IO(IO_TYPE_SPI,0x0B)
++#define IO_IOCTL_SPI_DEVICE_DISABLE        _IO(IO_TYPE_SPI,0x0C)
++#define IO_IOCTL_SPI_GET_FLAGS             _IO(IO_TYPE_SPI,0x0D)
++#define IO_IOCTL_SPI_SET_FLAGS             _IO(IO_TYPE_SPI,0x0E)
++#define IO_IOCTL_SPI_GET_STATS             _IO(IO_TYPE_SPI,0x0F)
++#define IO_IOCTL_SPI_CLEAR_STATS           _IO(IO_TYPE_SPI,0x10)
++#define IO_IOCTL_SPI_GET_FRAMESIZE         _IO(IO_TYPE_SPI,0x11)
++#define IO_IOCTL_SPI_SET_FRAMESIZE         _IO(IO_TYPE_SPI,0x12)
++#define IO_IOCTL_SPI_GET_CS                _IO(IO_TYPE_SPI,0x13)
++#define IO_IOCTL_SPI_SET_CS                _IO(IO_TYPE_SPI,0x14)
++#define IO_IOCTL_SPI_SET_CS_CALLBACK       _IO(IO_TYPE_SPI,0x15)
++#define IO_IOCTL_SPI_READ_WRITE            _IO(IO_TYPE_SPI,0x16)
++#define IO_IOCTL_SPI_FLUSH_DEASSERT_CS     _IO(IO_TYPE_SPI,0x17)
++
++
++/*
++** SPI clock polarity and phase (IO_IOCTL_SPI_XXX_MODE)
++*/
++#define SPI_CPHA_MASK                      (0x01)
++#define SPI_CPOL_MASK                      (0x02)
++
++#define SPI_CLK_POL_PHA_MODE0              (0x00)                            /* Inactive SPICLK low, sample on leading edge */
++#define SPI_CLK_POL_PHA_MODE1              (SPI_CPHA_MASK)                   /* Inactive SPICLK low, sample on trailing edge */
++#define SPI_CLK_POL_PHA_MODE2              (SPI_CPOL_MASK)                   /* Inactive SPICLK high, sample on leading edge */
++#define SPI_CLK_POL_PHA_MODE3              (SPI_CPOL_MASK | SPI_CPHA_MASK)   /* Inactive SPICLK high, sample on trailing edge */
++#define SPI_CLK_POL_PHA_MODE_MASK          (SPI_CPOL_MASK | SPI_CPHA_MASK)
++
++
++/*
++** SPI device modes of operation (IO_IOCTL_SPI_XXX_TRANSFER_MODE)
++*/
++#define SPI_DEVICE_MASTER_MODE             (0x00)
++#define SPI_DEVICE_SLAVE_MODE              (0x01)
++
++
++/*
++** SPI data bits transferring format (IO_IOCTL_SPI_XXX_ENDIAN)
++*/
++#define SPI_DEVICE_BIG_ENDIAN              (0x0001)
++#define SPI_DEVICE_LITTLE_ENDIAN           (0x8000)
++
++
++/*
++** SPI Open Flags
++*/
++#define SPI_FLAG_HALF_DUPLEX               (0 << IO_O_USER_SHIFT)
++#define SPI_FLAG_FULL_DUPLEX               (1 << IO_O_USER_SHIFT)
++#define SPI_FLAG_NO_DEASSERT_ON_FLUSH      (2 << IO_O_USER_SHIFT)
++
++
++/*
++** SPI Transfer Attributes
++** Public so that it can be used in default parameters in init structures,
++** otherwise there is no API to directly manipulate attibutes using these masks, use individual IOCTLs instead.
++*/
++#define SPI_ATTR_ENDIAN_MASK               0x01UL
++#define SPI_ATTR_LITTLE_ENDIAN             SPI_ATTR_ENDIAN_MASK
++#define SPI_ATTR_BIG_ENDIAN                0
++
++#define SPI_ATTR_TRANSFER_MODE_MASK        0x02UL
++#define SPI_ATTR_SLAVE_MODE                SPI_ATTR_TRANSFER_MODE_MASK
++#define SPI_ATTR_MASTER_MODE               0
++
++
++/* SPI Error Codes */
++#define SPI_OK                             (0x00)
++#define SPI_ERROR_MODE_INVALID             (SPI_ERROR_BASE | 0x01)
++#define SPI_ERROR_TRANSFER_MODE_INVALID    (SPI_ERROR_BASE | 0x02)
++#define SPI_ERROR_BAUD_RATE_INVALID        (SPI_ERROR_BASE | 0x03)
++#define SPI_ERROR_ENDIAN_INVALID           (SPI_ERROR_BASE | 0x04)
++#define SPI_ERROR_CHANNEL_INVALID          (SPI_ERROR_BASE | 0x05)
++#define SPI_ERROR_DEINIT_FAILED            (SPI_ERROR_BASE | 0x06)
++#define SPI_ERROR_INVALID_PARAMETER        (SPI_ERROR_BASE | 0x07)
++#define SPI_ERROR_FRAMESIZE_INVALID        (SPI_ERROR_BASE | 0x08)
++
++
++/*--------------------------------------------------------------------------*/
++/*
++**                    DATATYPE DECLARATIONS
++*/
++
++
++/*
++** SPI_PARAM_STRUCT
++**
++** This structure defines parameters of SPI bus transfer.
++** The structure is stored in init data and file cotext of upper layer driver and passed to lower layer SPI driver.
++*/
++typedef struct spi_param_struct
++{
++    /* Baud rate to use */
++    uint32_t BAUDRATE;
++
++    /* The SPI clock phase and polarity mode */
++    uint32_t MODE;
++
++    /* Size of single SPI frame */
++    uint32_t FRAMESIZE;
++
++    /* CS signal(s) to activate for the transfer */
++    uint32_t CS;
++
++    /* Additional attributes for the transfer */
++    uint32_t ATTR;
++
++    /* Pattern to transmit during half-duplex rx transfer */
++    uint32_t DUMMY_PATTERN;
++
++} SPI_PARAM_STRUCT, * SPI_PARAM_STRUCT_PTR;
++
++
++/*
++** Functions implemented by lower layer SPI driver (device interface).
++*/
++typedef _mqx_int (_CODE_PTR_ SPI_DEVIF_INIT_FPTR)(const void * init_data_ptr, void **io_info_ptr_ptr);
++typedef _mqx_int (_CODE_PTR_ SPI_DEVIF_DEINIT_FPTR)(void *io_info_ptr);
++typedef _mqx_int (_CODE_PTR_ SPI_DEVIF_SETPARAM_FPTR)(void *io_info_ptr, SPI_PARAM_STRUCT_PTR spi_param_ptr);
++typedef _mqx_int (_CODE_PTR_ SPI_DEVIF_TX_RX_FPTR)(void *io_info_ptr, uint8_t *txbuf, uint8_t *rxbuf, uint32_t len);
++typedef _mqx_int (_CODE_PTR_ SPI_DEVIF_CS_DEASSERT_FPTR)(void *io_info_ptr);
++typedef _mqx_int (_CODE_PTR_ SPI_DEVIF_IOCTL_FPTR)(void *io_info_ptr, SPI_PARAM_STRUCT_PTR spi_param_ptr, uint32_t cmd, uint32_t *cmd_param_ptr);
++
++
++typedef struct spi_devif_struct
++{
++    /* Initialization if low level SPI driver */
++    SPI_DEVIF_INIT_FPTR     INIT;
++
++    /* Deinitialization of low level SPI driver */
++    SPI_DEVIF_DEINIT_FPTR   DEINIT;
++
++    /* Sets up the SPI bus accorting to given parameters */
++    SPI_DEVIF_SETPARAM_FPTR SETPARAM;
++
++    /* Data trasfer function */
++    SPI_DEVIF_TX_RX_FPTR    TX_RX;
++
++    /* Immediate deassertion of CS signals, if handled by low level driver */
++    SPI_DEVIF_CS_DEASSERT_FPTR CS_DEASSERT;
++
++    /* IOCTL commands not fully handled by upper layer are passed to this function */
++    SPI_DEVIF_IOCTL_FPTR    IOCTL;
++
++} SPI_DEVIF_STRUCT, * SPI_DEVIF_STRUCT_PTR;
++
++typedef const SPI_DEVIF_STRUCT * SPI_DEVIF_STRUCT_CPTR;
++
++
++/*
++** SPI_CS_CALLBACK
++**
++** This callback function is used to provide external CS handling funtionality.
++*/
++typedef _mqx_int (_CODE_PTR_ SPI_CS_CALLBACK)(uint32_t cs, void *context_data);
++
++
++/*
++** SPI_INIT_STRUCT
++**
++** This structure defines the initialization parameters to be used
++** when a spi port is initialized.
++*/
++typedef struct spi_init_struct
++{
++    /* Pointer to low level driver */
++    SPI_DEVIF_STRUCT_CPTR DEVIF;
++
++    /* Pointer to init data specific for low level driver */
++    const void           *DEVIF_INIT;
++
++    /* Default transfer parameters for low level driver */
++    SPI_PARAM_STRUCT      PARAMS;
++
++    /* Default callback function for external CS handling */
++    SPI_CS_CALLBACK       CS_CALLBACK;
++
++    /* Default context for CS callback function */
++    void                 *CS_USERDATA;
++
++} SPI_INIT_STRUCT, * SPI_INIT_STRUCT_PTR;
++
++typedef const SPI_INIT_STRUCT * SPI_INIT_STRUCT_CPTR;
++
++
++/*
++** SPI_STATISTICS_STRUCT
++**
++** This is used to get statistics data from SPI device using IO_IOCTL_SPI_GET_STATS.
++*/
++typedef struct spi_statistics_struct
++{
++   /* Number of valid frames received (not dummy receives) */
++   uint32_t          RX_PACKETS;
++
++   /* Number of valid frames transmitted (not dummy transmits) */
++   uint32_t          TX_PACKETS;
++
++} SPI_STATISTICS_STRUCT, * SPI_STATISTICS_STRUCT_PTR;
++
++
++/*
++** SPI_CS_CALLBACK_STRUCT
++**
++** This structure defines the parameters of the external chip select callback
++** when passed to IO_IOCTL_SPI_SET_CS_CALLBACK.
++*/
++
++typedef struct spi_cs_callback_struct
++{
++   /* The SPI callback itself */
++   SPI_CS_CALLBACK  CALLBACK;
++
++   /* User data */
++   void            *USERDATA;
++
++} SPI_CS_CALLBACK_STRUCT, * SPI_CS_CALLBACK_STRUCT_PTR;
++
++
++/*
++** SPI_READ_WRITE_STRUCT
++**
++** Structure passed to IOCTL TX/RX command (IO_IOCTL_SPI_READ_WRITE) for true duplex operation.
++*/
++
++typedef struct spi_read_write_struct
++{
++   /* Byte length of each buffer */
++   uint32_t      BUFFER_LENGTH;
++
++   /* Buffer containing bytes to write */
++   char         *WRITE_BUFFER;
++
++   /* Buffer containing bytes read after transfer */
++   char         *READ_BUFFER;
++
++} SPI_READ_WRITE_STRUCT, * SPI_READ_WRITE_STRUCT_PTR;
++
++
++/*--------------------------------------------------------------------------*/
++/*
++**                        FUNCTION PROTOTYPES
++*/
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++_mqx_int _io_spi_install(char *identifier, SPI_INIT_STRUCT_CPTR init_data_ptr);
++
++
++#ifdef __cplusplus
++}
++#endif
++
++
++#endif
++
++/* EOF */
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/io/spi/spi.c udooneo_MQX_4_1/mqx/source/io/spi/spi.c
+--- udooneo_MQX_4_1_orig/mqx/source/io/spi/spi.c	2014-12-25 07:54:58.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/io/spi/spi.c	2016-07-19 16:07:15.814835223 +0200
+@@ -29,7 +29,7 @@
+ 
+ #include <stdlib.h>
+ 
+-#include "spi.h"
++#include <spi_bsp_mqx.h>
+ #include "spi_prv.h"
+ 
+ 
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_ecspi.c udooneo_MQX_4_1/mqx/source/io/spi/spi_ecspi.c
+--- udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_ecspi.c	2014-12-25 07:54:58.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/io/spi/spi_ecspi.c	2016-07-19 16:07:15.814835223 +0200
+@@ -29,7 +29,7 @@
+ #include <bsp.h>
+ #include <io_prv.h>
+ 
+-#include "spi.h"
++#include <spi_bsp_mqx.h>
+ #include "spi_prv.h"
+ 
+ #include "spi_ecspi.h"
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_ecspi_prv.h udooneo_MQX_4_1/mqx/source/io/spi/spi_ecspi_prv.h
+--- udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_ecspi_prv.h	2014-12-25 07:54:58.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/io/spi/spi_ecspi_prv.h	2016-07-19 16:07:15.814835223 +0200
+@@ -27,7 +27,7 @@
+ #ifndef __spi_ecspi_prv_h__
+ #define __spi_ecspi_prv_h__
+ 
+-#include "spi.h"
++#include <spi_bsp_mqx.h>
+ #include "spi_ecspi.h"
+ 
+ 
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_prv.h udooneo_MQX_4_1/mqx/source/io/spi/spi_prv.h
+--- udooneo_MQX_4_1_orig/mqx/source/io/spi/spi_prv.h	2014-12-25 07:54:58.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/io/spi/spi_prv.h	2016-07-19 16:07:15.814835223 +0200
+@@ -27,7 +27,7 @@
+ #ifndef __spi_prv_h__
+ #define __spi_prv_h__
+ 
+-#include "spi.h"
++#include <spi_bsp_mqx.h>
+ 
+ 
+ /*--------------------------------------------------------------------------*/
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/io/spi/spi.readme udooneo_MQX_4_1/mqx/source/io/spi/spi.readme
+--- udooneo_MQX_4_1_orig/mqx/source/io/spi/spi.readme	1970-01-01 01:00:00.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/io/spi/spi.readme	2016-01-17 17:22:42.000000000 +0100
+@@ -0,0 +1,2 @@
++renamed spi.h in spi_bsp_mqx.h for conflict with arduino spi header
++
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/kernel/mqx.c udooneo_MQX_4_1/mqx/source/kernel/mqx.c
+--- udooneo_MQX_4_1_orig/mqx/source/kernel/mqx.c	2014-12-25 07:55:10.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/kernel/mqx.c	2016-07-19 16:07:15.814835223 +0200
+@@ -385,6 +385,27 @@
+     }/* Endif */
+     MQX_LONGJMP( _mqx_exit_jump_buffer_internal, 1 );
+ #else
++
++    //===========================================================
++    // added for UdooNeo Board 20/06/2016
++    // Pag. 475, IMX6SXRM.pdf
++    // After a reset, complete an invalidate cache command before using the cache !!!!!!!!
++    // This resolve the fail restart M4 core, when new binary, with different PC is loaded
++    //===========================================================
++    /* invalidate dcache */
++    LMEM_PSCCR = LMEM_PSCCR_INVW1_MASK | LMEM_PSCCR_INVW0_MASK;
++    LMEM_PSCCR |= LMEM_PSCCR_GO_MASK;
++    /* wait until the command completes */
++    while (LMEM_PSCCR & LMEM_PSCCR_GO_MASK)
++    {}
++
++    /*invalidate icache */
++    LMEM_PCCCR = LMEM_PCCCR_INVW1_MASK | LMEM_PCCCR_INVW0_MASK;
++    LMEM_PCCCR |= LMEM_PCCCR_GO_MASK;
++    /* wait until the command completes */
++    while (LMEM_PCCCR & LMEM_PCCCR_GO_MASK)
++    {}
++
+     while (TRUE) {
+     } /* Endwhile */
+ #endif
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/README.md udooneo_MQX_4_1/README.md
+--- udooneo_MQX_4_1_orig/README.md	1970-01-01 01:00:00.000000000 +0100
++++ udooneo_MQX_4_1/README.md	2016-02-17 17:42:38.080921340 +0100
+@@ -0,0 +1,22 @@
++# udooneo_MQX_4_1
++MQX 4.1 repository for UDOO NEO (iMX6 SoloX)
++
++Bsp reference: imx6sx_sdb_m4
++
++## Compilation
++Makefile are here: Freescale_MQX_4_1_IMX6SX/build/imx6sx_sdb_m4/make
++build_gcc_arm.sh, to compile
++clean_gcc_arm.sh, to clean
++
++### Compiler version
++Version 4.8 doesn't let PWM works. Should be used version 4.9. 
++
++Should be edited "Freescale_MQX_4_1_IMX6SX/build/common/make/global.mak" setting the toolchain path depending of your configuration:
++TOOLCHAIN_ROOTDIR = /usr/local/gcc-arm-none-eabi-4_9-2014q4
++
++### Edited sources:
++init_bsp.c, Freescale_MQX_4_1_IMX6SX/mqx/source/bsp/imx6sx_sdb_m4
++init_hw.c, Freescale_MQX_4_1_IMX6SX/mqx/source/bsp/imx6sx_sdb_m4
++init_gpio.c, Freescale_MQX_4_1_IMX6SX/mqx/source/bsp/imx6sx_sdb_m4
++imx6sx_sdb_m4.h, Freescale_MQX_4_1_IMX6SX/mqx/source/bsp/imx6sx_sdb_m4
++user_config.h, Freescale_MQX_4_1_IMX6SX/config/imx6sx_sdb_m4
