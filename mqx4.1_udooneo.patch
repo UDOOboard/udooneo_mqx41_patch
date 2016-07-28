@@ -312,8 +312,29 @@ diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/imx6s
  **                      I2C
 diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c
 --- udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2014-12-25 07:55:26.000000000 +0100
-+++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2015-09-20 21:51:19.000000000 +0200
-@@ -199,7 +199,9 @@
++++ udooneo_MQX_4_1/mqx/source/bsp/imx6sx_sdb_m4/init_bsp.c	2016-07-28 16:21:10.464933862 +0200
+@@ -31,6 +31,8 @@
+ #include "bsp_rev.h"
+ #include "core_mutex.h"
+ 
++void __libc_init_array(void);
++
+ #if BSP_ALARM_FREQUENCY == 0
+ #error Wrong definition of BSP_ALARM_FREQUENCY
+ #endif
+@@ -48,6 +50,11 @@
+     uint32_t result;
+     KERNEL_DATA_STRUCT_PTR         kernel_data;
+ 
++    // run constructor calls of static objects
++    // This function is removed from toolchain_startup() because the memory management components isn't yet initialized.
++    // This produce crashes M4 when c++ constructor is global declared because call to malloc not works 
++    __libc_init_array();
++
+     /* allocate peripheral resources */
+     _bsp_rdc_init();
+ 
+@@ -199,7 +206,9 @@
  #endif
  
  #if BSPCFG_ENABLE_SPI5
@@ -324,7 +345,7 @@ diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/bsp/imx6sx_sdb_m4/init_
  #endif
  
  /* Flashx and QuadSPI only one is allowed to be enabled
-@@ -257,6 +259,7 @@
+@@ -257,6 +266,7 @@
     _io_mcore_lpm_init();
  #endif
  
@@ -1150,6 +1171,39 @@ diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/kernel/mqx.c udooneo_MQ
      while (TRUE) {
      } /* Endwhile */
  #endif
+diff -rNu --exclude .git udooneo_MQX_4_1_orig/mqx/source/psp/cortex_m/compiler/gcc_arm/comp.c udooneo_MQX_4_1/mqx/source/psp/cortex_m/compiler/gcc_arm/comp.c
+--- udooneo_MQX_4_1_orig/mqx/source/psp/cortex_m/compiler/gcc_arm/comp.c	2014-12-25 07:55:12.000000000 +0100
++++ udooneo_MQX_4_1/mqx/source/psp/cortex_m/compiler/gcc_arm/comp.c	2016-07-28 16:21:10.464933862 +0200
+@@ -174,16 +174,22 @@
+  */
+ void toolchain_startup(void)
+ {
+-// initialize necessary hardware (clocks, ddr, ...)
++    // initialize necessary hardware (clocks, ddr, ...)
+     init_hardware();
+-// initialize data - copy and zero sections
+-// static variables can be used on return
++
++    // initialize data - copy and zero sections
++    // static variables can be used on return
+     data_startup();
+-// register destructor calls of static objects
++
++    // register destructor calls of static objects
+     atexit(__libc_fini_array);
+-// run constructor calls of static objects
+-    __libc_init_array();
+-// run main, if return go to exit
++
++    // This function is removed from toolchain_startup() because the memory management components isn't yet initialized.
++    // This produce crashes M4 when c++ constructor is global declared because call to malloc not works 
++    // run constructor calls of static objects
++    //__libc_init_array();
++
++    // run main, if return go to exit
+     exit(main());
+ }
+ 
 diff -rNu --exclude .git udooneo_MQX_4_1_orig/README.md udooneo_MQX_4_1/README.md
 --- udooneo_MQX_4_1_orig/README.md	1970-01-01 01:00:00.000000000 +0100
 +++ udooneo_MQX_4_1/README.md	2016-02-17 17:42:38.080921340 +0100
